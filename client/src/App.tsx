@@ -26,6 +26,48 @@ const PAPER_TEXTURE = "https://files.manuscdn.com/user_upload_by_module/session_
 const DIVIDER_IMAGE = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663030558102/TnDZmPJfmIIeANQA.png";
 const AD_FRAME = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663030558102/QAIiuzjYvnUSEUfq.png";
 const BRAND_MARK = "https://files.manuscdn.com/user_upload_by_module/session_file/310419663030558102/TfcXihZRHCyNvldH.png";
+const STORY_IMAGES: Record<number, string> = {
+  1: "/manus-storage/story-01-sharing-friends_d1434f88.png",
+  2: "/manus-storage/story-02-helping-turtle_4e33e92e.png",
+  3: "/manus-storage/story-03-brave-butterfly_4ea25ce6.png",
+  4: "/manus-storage/story-04-magic-garden_871f2760.png",
+  5: "/manus-storage/story-05-colorful-fruit-day_b0390cd0.png",
+  6: "/manus-storage/story-06-hare-tortoise_15277248.png",
+  7: "/manus-storage/story-07-little-star_16797c14.png",
+  8: "/manus-storage/story-08-clever-mouse_4fbf7c2f.png",
+  9: "/manus-storage/story-09-stubborn-sunflower_b27698d2.png",
+  10: "/manus-storage/story-10-noisy-farm_d3f513e3.png",
+  11: "/manus-storage/story-11-reading-bear_c07336a3.png",
+  12: "/manus-storage/story-12-friendly-cloud_38d0269f.png",
+  13: "/manus-storage/story-13-hedgehog-spikes_9977ea2b.png",
+  14: "/manus-storage/story-14-ant-grasshopper_81a02e06.png",
+  15: "/manus-storage/story-15-remembering-elephant_e371c605.png",
+  16: "/manus-storage/story-16-acorn-squirrel_a5c74178.png",
+  17: "/manus-storage/story-17-mouse-elephant_fac573e3.png",
+  18: "/manus-storage/story-18-wise-owl_19b205e9.png",
+  19: "/manus-storage/story-19-water-droplet_912a5c9a.png",
+  20: "/manus-storage/story-20-changing-butterfly_9bd6786d.png",
+  21: "/manus-storage/story-21-patient-rabbit_134c170b.png",
+  22: "/manus-storage/story-22-little-star-dream_f2cdbb1f.png",
+  23: "/manus-storage/story-23-clean-bear_da5b8640.png",
+  24: "/manus-storage/story-24-sharing-flower_dc2d6e79.png",
+  25: "/manus-storage/story-25-self-built-home_8bc33600.png",
+  26: "/manus-storage/story-26-reading-cat_a596df59.png",
+  27: "/manus-storage/story-27-never-give-up-ant_396ca8c7.png",
+  28: "/manus-storage/story-28-sharing-squirrel_e3ad2938.png",
+  29: "/manus-storage/story-29-joyful-cloud_3bda6bff.png",
+  30: "/manus-storage/story-30-polar-bear_ab48a97f.png",
+};
+
+const readStoredVoice = () => {
+  try { return localStorage.getItem("vividtale.voiceURI") ?? "default"; } catch { return "default"; }
+};
+const readStoredRate = () => {
+  try {
+    const value = Number(localStorage.getItem("vividtale.readingRate"));
+    return [0.72, 0.88, 1, 1.15, 1.3].includes(value) ? value : 0.88;
+  } catch { return 0.88; }
+};
 
 type Story = {
   id: number;
@@ -147,7 +189,7 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: (story: Story) => 
   return (
     <article className={`story-card tone-${story.tone}`}>
       <div className="card-topline"><span className="story-number">{String(story.id).padStart(2, "0")}</span><span className="card-leaf">✦</span></div>
-      <div className={`card-illustration scene-${story.tone}`} aria-hidden="true"><span className="scene-sun" /><span className="scene-cloud scene-cloud-one" /><span className="scene-cloud scene-cloud-two" /><span className="scene-hill scene-hill-back" /><span className="scene-hill scene-hill-front" /><span className="scene-flower scene-flower-one">✦</span><span className="scene-flower scene-flower-two">✦</span><span className="story-character">{story.emoji}</span></div>
+      <div className={`card-illustration scene-${story.tone}`}><img src={STORY_IMAGES[story.id]} alt={`${story.title} illustration`} loading={story.id > 6 ? "lazy" : "eager"} /></div>
       <div className="card-copy">
         <p className="eyebrow">A little story · {story.id}</p>
         <h3>{story.title}</h3>
@@ -164,18 +206,65 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [voiceReady, setVoiceReady] = useState(true);
+  const [voiceError, setVoiceError] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState(readStoredVoice);
+  const [readingRate, setReadingRate] = useState(readStoredRate);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const speechRunRef = useRef(0);
   const paragraphs = story ? story.content.split(String.fromCharCode(10) + String.fromCharCode(10)) : [];
+
+  useEffect(() => {
+    if (!window.speechSynthesis) {
+      setVoiceReady(false);
+      return;
+    }
+    const updateVoices = () => {
+      const englishVoices = window.speechSynthesis.getVoices()
+        .filter((voice) => /^en([_-]|$)/i.test(voice.lang) || /english/i.test(voice.name))
+        .sort((a, b) => Number(b.localService) - Number(a.localService) || a.name.localeCompare(b.name));
+      setAvailableVoices(englishVoices);
+      setSelectedVoiceURI((current) => current === "default" || englishVoices.some((voice) => (voice.voiceURI || voice.name) === current) ? current : "default");
+    };
+    updateVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", updateVoices);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", updateVoices);
+  }, []);
 
   useEffect(() => {
     setParagraphIndex(0);
     setIsSpeaking(false);
     setIsPaused(false);
+    setVoiceError(false);
+    speechRunRef.current += 1;
+    if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
     window.speechSynthesis?.cancel();
-    return () => window.speechSynthesis?.cancel();
+    return () => {
+      speechRunRef.current += 1;
+      if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+      window.speechSynthesis?.cancel();
+    };
   }, [story]);
 
-  const speakParagraph = (index: number) => {
+  useEffect(() => {
+    try {
+      localStorage.setItem("vividtale.voiceURI", selectedVoiceURI);
+      localStorage.setItem("vividtale.readingRate", String(readingRate));
+    } catch { /* Preference storage can be unavailable in private browsing. */ }
+  }, [selectedVoiceURI, readingRate]);
+
+  const cancelSpeech = () => {
+    speechRunRef.current += 1;
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+    utteranceRef.current = null;
+  };
+
+  const speakParagraph = (index: number, voiceURI = selectedVoiceURI, rate = readingRate) => {
     if (!story || !window.speechSynthesis) {
       setVoiceReady(false);
       return;
@@ -186,28 +275,59 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
       setIsPaused(false);
       return;
     }
+    const runId = speechRunRef.current;
+    const selectedVoice = availableVoices.find((voice) => (voice.voiceURI || voice.name) === voiceURI);
     const utterance = new SpeechSynthesisUtterance(next);
     utterance.lang = "en-US";
-    utterance.rate = 0.92;
+    utterance.voice = selectedVoice ?? null;
+    utterance.rate = rate;
     utterance.pitch = 1.05;
-    utterance.onstart = () => { setIsSpeaking(true); setIsPaused(false); };
+    utterance.onstart = () => { if (speechRunRef.current === runId) { setIsSpeaking(true); setIsPaused(false); setVoiceError(false); } };
     utterance.onend = () => {
+      if (speechRunRef.current !== runId) return;
       if (index < paragraphs.length - 1) {
         setParagraphIndex(index + 1);
-        window.setTimeout(() => speakParagraph(index + 1), 140);
+        timeoutRef.current = window.setTimeout(() => speakParagraph(index + 1, voiceURI, rate), 140);
       } else {
         setIsSpeaking(false);
         setIsPaused(false);
         setParagraphIndex(0);
       }
     };
-    utterance.onerror = () => { setIsSpeaking(false); setIsPaused(false); setVoiceReady(false); };
+    utterance.onerror = () => {
+      if (speechRunRef.current !== runId) return;
+      setIsSpeaking(false);
+      setIsPaused(false);
+      setVoiceError(true);
+    };
     utteranceRef.current = utterance;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   };
 
+  const restartWithSettings = (voiceURI: string, rate: number) => {
+    if (!isSpeaking) return;
+    const currentParagraph = paragraphIndex;
+    cancelSpeech();
+    setIsPaused(false);
+    timeoutRef.current = window.setTimeout(() => speakParagraph(currentParagraph, voiceURI, rate), 90);
+  };
+
+  const handleVoiceChange = (voiceURI: string) => {
+    setSelectedVoiceURI(voiceURI);
+    restartWithSettings(voiceURI, readingRate);
+  };
+
+  const handleRateChange = (rate: number) => {
+    setReadingRate(rate);
+    restartWithSettings(selectedVoiceURI, rate);
+  };
+
   const startVoice = () => {
+    if (!window.speechSynthesis) {
+      setVoiceReady(false);
+      return;
+    }
     if (isSpeaking && !isPaused) {
       window.speechSynthesis.pause();
       setIsPaused(true);
@@ -220,26 +340,32 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
   };
 
   const stopVoice = () => {
-    window.speechSynthesis?.cancel();
+    cancelSpeech();
     setIsSpeaking(false);
     setIsPaused(false);
     setParagraphIndex(0);
   };
 
   if (!story) return null;
-  const progress = Math.round(((paragraphIndex + (isSpeaking ? 0.35 : 0)) / paragraphs.length) * 100);
+  const progress = paragraphs.length ? Math.min(100, Math.round(((paragraphIndex + (isSpeaking ? 0.35 : 0)) / paragraphs.length) * 100)) : 0;
+  const selectedVoiceLabel = availableVoices.find((voice) => (voice.voiceURI || voice.name) === selectedVoiceURI)?.name;
+  const voiceStatus = !voiceReady ? "Voice narration is unavailable in this browser" : voiceError ? "This voice could not start; try another option" : availableVoices.length ? `${selectedVoiceLabel || "Automatic voice"} · English narration` : "Loading English voices…";
 
   return (
     <div className="reader-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="reader-panel" role="dialog" aria-modal="true" aria-labelledby="reader-title">
         <button className="icon-button reader-close" onClick={onClose} aria-label="Close story"><X size={21} /></button>
-        <div className={`reader-art tone-${story.tone}`}><span aria-hidden="true">{story.emoji}</span><p>Story {String(story.id).padStart(2, "0")}</p></div>
+        <div className={`reader-art tone-${story.tone}`}><img src={STORY_IMAGES[story.id]} alt={`${story.title} illustration`} /><p>Story {String(story.id).padStart(2, "0")}</p></div>
         <div className="reader-main">
           <p className="eyebrow">VividTale reading room</p>
           <h2 id="reader-title">{story.title}</h2>
           <p className="reader-lesson"><Sparkles size={17} />{story.lesson}</p>
           <div className="voice-player" aria-label="Story voice controls">
-            <div className="voice-intro"><span className="voice-icon"><Volume2 size={18} /></span><div><strong>{isSpeaking ? (isPaused ? "Voice paused" : "Reading aloud") : "Listen to the story"}</strong><span>{voiceReady ? "English narration · built into your browser" : "Voice narration is unavailable in this browser"}</span></div></div>
+            <div className="voice-intro"><span className="voice-icon"><Volume2 size={18} /></span><div><strong>{isSpeaking ? (isPaused ? "Voice paused" : "Reading aloud") : "Listen to the story"}</strong><span>{voiceStatus}</span></div></div>
+            <div className="voice-settings">
+              <label className="voice-field"><span>Voice</span><select value={selectedVoiceURI} onChange={(event) => handleVoiceChange(event.target.value)} disabled={!voiceReady || !availableVoices.length} aria-label="Choose narration voice"><option value="default">Automatic · best available</option>{availableVoices.map((voice) => { const key = voice.voiceURI || voice.name; return <option key={key} value={key}>{voice.name} · {voice.lang}{voice.localService ? " · On-device" : " · System"}</option>; })}</select></label>
+              <label className="voice-field"><span>Reading speed</span><select value={String(readingRate)} onChange={(event) => handleRateChange(Number(event.target.value))} aria-label="Choose reading speed"><option value="0.72">Slow · 0.72×</option><option value="0.88">Gentle · 0.88×</option><option value="1">Natural · 1×</option><option value="1.15">Bright · 1.15×</option><option value="1.3">Quick · 1.3×</option></select></label>
+            </div>
             <div className="voice-actions">
               <button className="voice-primary" onClick={startVoice} disabled={!voiceReady} aria-label={isSpeaking && !isPaused ? "Pause narration" : isPaused ? "Resume narration" : "Play narration"}>{isSpeaking && !isPaused ? <Pause size={17} /> : <Play size={17} />}{isSpeaking && !isPaused ? "Pause" : isPaused ? "Resume" : "Play voice"}</button>
               <button className="voice-stop" onClick={stopVoice} disabled={!isSpeaking} aria-label="Stop narration"><Square size={14} />Stop</button>
@@ -265,6 +391,33 @@ function AdSpace() {
   );
 }
 
+function SiteInformation() {
+  return (
+    <section className="site-information" id="site-information" aria-labelledby="site-information-title">
+      <div className="site-information-heading"><div><p className="eyebrow"><span className="section-bookmark" />For families & partners</p><h2 id="site-information-title">Clear words build <em>trust.</em></h2></div><p>VividTale keeps its stories, advertising, and privacy information easy to find for parents, caregivers, and future partners.</p></div>
+      <div className="information-grid">
+        <article className="information-card" id="contact"><p className="eyebrow">Contact</p><h3>Talk to the VividTale team.</h3><p>Questions about a story, an illustration, or a family-friendly partnership? Send a note and we will read it carefully.</p><a className="information-link" href="mailto:Emadh5156@gmail.com">Emadh5156@gmail.com <ArrowRight size={15} /></a></article>
+        <article className="information-card" id="privacy"><p className="eyebrow">Privacy & cookies</p><h3>Simple, open, and parent-friendly.</h3><p>VividTale does not ask children to create accounts. If advertising is enabled, Google and other third-party vendors may use cookies to serve ads based on visits to this or other sites. You can manage personalized advertising in <a href="https://www.google.com/settings/ads" target="_blank" rel="noreferrer">Google Ads Settings</a> or opt out through <a href="https://www.aboutads.info/choices/" target="_blank" rel="noreferrer">aboutads.info</a>.</p></article>
+        <article className="information-card" id="terms"><p className="eyebrow">Terms of use</p><h3>Stories made for shared moments.</h3><p>VividTale provides short educational stories for personal, family, and classroom reading. Please do not copy, resell, or redistribute the original stories and illustrations without permission. Content is educational and should be enjoyed with a parent or caregiver.</p></article>
+        <article className="information-card" id="advertising-policy"><p className="eyebrow">Advertising disclosure</p><h3>Ads stay separate from stories.</h3><p>Advertising spaces are clearly labeled and will only be used for family-friendly partners. No advertising code is loaded until the publisher has completed its Google setup and consent requirements. Contact us if you would like to discuss a suitable partnership.</p><a className="information-link" href="mailto:Emadh5156@gmail.com?subject=VividTale%20partnership">Discuss a partnership <ArrowRight size={15} /></a></article>
+      </div>
+      <p className="policy-note">This information is a practical publisher draft, not legal advice. Privacy and advertising requirements can vary by country and should be reviewed before connecting a live advertising account.</p>
+    </section>
+  );
+}
+
+function CookieNotice() {
+  const [consent, setConsent] = useState(() => {
+    try { return localStorage.getItem("vividtale.cookieChoice") ?? "pending"; } catch { return "pending"; }
+  });
+  if (consent !== "pending") return null;
+  const saveChoice = (choice: string) => {
+    try { localStorage.setItem("vividtale.cookieChoice", choice); } catch { /* Continue without persistence. */ }
+    setConsent(choice);
+  };
+  return <aside className="cookie-notice" role="status" aria-label="Privacy choices"><div><p className="eyebrow">Privacy choices</p><p>We use essential storage for preferences. Advertising cookies are not active in this preview; if ads are added, this choice will be updated before they load.</p></div><div className="cookie-actions"><a href="#privacy" className="text-button">Read privacy</a><button className="cookie-secondary" onClick={() => saveChoice("essential")}>Essential only</button><button className="cookie-primary" onClick={() => saveChoice("accepted")}>Allow optional cookies</button></div></aside>;
+}
+
 export default function App() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [query, setQuery] = useState("");
@@ -280,7 +433,7 @@ export default function App() {
   return (
     <div className="site-shell" id="top" style={{ "--paper-texture": `url(${PAPER_TEXTURE})` } as React.CSSProperties}>
       <header className="site-header">
-        <div className="header-inner"><Logo /><nav className="desktop-nav" aria-label="Main navigation"><a href="#library">Library <span>30</span></a><a href="#about">About VividTale</a><a href="#advertise">Advertise</a></nav><a className="header-cta" href="#library">Find a story <ArrowRight size={16} /></a></div>
+        <div className="header-inner"><Logo /><nav className="desktop-nav" aria-label="Main navigation"><a href="#library">Library <span>30</span></a><a href="#about">About VividTale</a><a href="#advertise">Advertise</a><a href="#contact">Contact</a></nav><a className="header-cta" href="#library">Find a story <ArrowRight size={16} /></a></div>
       </header>
       <main>
         <section className="hero-section">
@@ -296,8 +449,10 @@ export default function App() {
         </section>
         <section className="ad-section" id="advertise"><AdSpace /></section>
         <section className="closing-section"><div><p className="eyebrow"><span className="section-bookmark" />A note for grown-ups</p><h2>Make room for a story<br /><em>before the day gets loud.</em></h2></div><p>Read together, listen in the car, or let a child choose the lesson they need today. Every tale is short enough for a little moment and rich enough to revisit.</p></section>
+        <SiteInformation />
       </main>
-      <footer className="site-footer"><div><Logo /><p>Little stories. Lasting ideas.</p></div><div className="footer-links"><a href="#library">Story library</a><a href="#about">Our approach</a><a href="#advertise">Advertising</a></div><span>© 2026 VividTale</span></footer>
+      <footer className="site-footer"><div><Logo /><p>Little stories. Lasting ideas.</p></div><div className="footer-links"><a href="#library">Story library</a><a href="#about">Our approach</a><a href="#privacy">Privacy</a><a href="#contact">Contact</a></div><span>© 2026 VividTale</span></footer>
+      <CookieNotice />
       <StoryReader story={selectedStory} onClose={() => setSelectedStory(null)} />
     </div>
   );
