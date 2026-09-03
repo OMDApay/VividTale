@@ -1,0 +1,3 @@
+VividTale is an interactive library of short English stories for children, featuring original picture-book illustrations, gentle life lessons, searchable topics, and browser-based read-aloud narration. Explore 30 family-friendly tales about kindness, courage, curiosity, and care.
+
+Character count: 281
