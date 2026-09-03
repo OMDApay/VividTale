@@ -9,3 +9,12 @@
 - [ ] Save the final Manus project checkpoint and provide the deploy URL plus the project version to the user.
 - [ ] Use the newly supplied Vercel token for account verification; Vercel returned `User not found`, so it was not used for deployment.
 - [x] Confirm the existing production alias remains healthy after the account check.
+
+## GitHub and production verification
+
+- [ ] Verify the GitHub repository remote, default branch, and tracked application files.
+- [ ] Confirm the build command and deployment output directory match the React/Vite project.
+- [ ] Add an SEO-friendly English repository description under 350 characters.
+- [ ] Test the production build for TypeScript errors, blank-page causes, broken imports, and missing assets.
+- [ ] Verify the published URL and story-reader interaction after deployment.
+- [ ] Save a new stable checkpoint with the verification results.
