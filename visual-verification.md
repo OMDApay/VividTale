@@ -9,3 +9,9 @@ The reader opened successfully in the local preview after a direct click. It now
 The speed selector accepted `Quick · 1.3×` and displayed the selected value in the reader. The play control then reached the reader’s explicit fallback message, `This voice could not start; try another option`, in the sandbox browser. This confirms the UI error path is visible and non-blocking; production support still depends on the visitor’s browser having a working SpeechSynthesis voice. The new voice list will populate when the browser exposes English voices through `voiceschanged`.
 
 The library was expanded through the UI and verified programmatically: 30 story cards rendered, 30 card images rendered, and 0 cards had a missing image source. The visible cards use the generated `/manus-storage/` URLs for distinct story scenes. This verifies the replacement mapping for all thirty stories in the current preview.
+
+## Missing illustration pass
+
+The local VividTale preview loaded the root page successfully with the hero, navigation, library controls, ad placeholder, privacy choices, contact email, and no blank-page state. The library initially rendered six cards and exposed the “Show all 30 stories” control. The ten missing story IDs were remapped to the newly reserved VividTale illustration URLs before the next production build.
+
+The follow-up DOM verification expanded the shelf after the asynchronous React update and confirmed 30 story cards, 30 image elements, 30 unique image sources, zero missing sources, and zero missing alt attributes. The ten newly remapped IDs are present in the rendered library source map.

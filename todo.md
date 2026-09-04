@@ -18,3 +18,11 @@
 - [ ] Test the production build for TypeScript errors, blank-page causes, broken imports, and missing assets.
 - [ ] Verify the published URL and story-reader interaction after deployment.
 - [ ] Save a new stable checkpoint with the verification results.
+
+## Missing story illustrations and final validation
+
+- [ ] Generate matching illustrations for stories 10, 13, 16, 17, 21, 22, 23, 27, 28, and 29.
+- [ ] Upload or reference the ten new illustrations without breaking the current storage strategy.
+- [ ] Verify all 30 story cards have distinct image sources and valid rendered images.
+- [ ] Re-run TypeScript, production build, preview smoke test, and blank-page checks.
+- [ ] Push the updated code and assets mapping to GitHub main, then save a final checkpoint.
