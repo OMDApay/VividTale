@@ -34,3 +34,11 @@
 - [ ] Verify the four images in the rendered DOM and through direct HTTP asset checks.
 - [ ] Confirm whether a real Vercel production deployment exists; if not, prepare the project for the user's Publish action without claiming a URL.
 - [ ] Save a checkpoint after the corrected image and deployment verification pass.
+
+## GitHub Pages recovery
+
+- [ ] Inspect the GitHub Pages URL, repository default branch, Pages source, and workflow status.
+- [ ] Add a GitHub Pages workflow that builds the React client and publishes the generated `dist/public` output.
+- [ ] Configure Vite base paths and client-side asset URLs for `/VividTale/`.
+- [ ] Verify the four reported images plus story cards, text, and narration controls on GitHub Pages.
+- [ ] Save a checkpoint after the GitHub Pages fix and clearly report the working public URL.

@@ -78,8 +78,9 @@ function vitePluginManusDebugCollector(): Plugin {
   return {
     name: "manus-debug-collector",
 
-    transformIndexHtml(html) {
-      if (process.env.NODE_ENV === "production") {
+    transformIndexHtml(html, ctx) {
+      // Keep Manus diagnostics in local dev only; never ship them in a production artifact.
+      if (process.env.NODE_ENV === "production" || !ctx?.server) {
         return html;
       }
       return {
@@ -206,6 +207,8 @@ function vitePluginStorageProxy(): Plugin {
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginStorageProxy()];
 
 export default defineConfig({
+  // GitHub Pages publishes under /VividTale/; Manus/Vercel stay at the domain root.
+  base: process.env.VITE_BASE || "/",
   plugins,
   resolve: {
     alias: {
