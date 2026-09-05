@@ -23,3 +23,7 @@ The local preview now exposes the four requested cards with the corrected public
 ## Final CDN image pass
 
 After switching the full story map to public CDN URLs, the browser test expanded all 30 cards and forced deferred images to load. It confirmed 30 loaded images, zero failed images, 30 unique sources, and stories 10, 16, 22, and 28 each loaded at 960px natural width. This removes the earlier Vercel 404 risk caused by internal `/manus-storage/` paths.
+
+## Published Manus URL verification
+
+The published Manus URL `https://vividtale-jq26khpt.manus.space/` renders the actual VividTale application rather than README. After expanding the library and forcing lazy images to load, the browser confirmed 30 story cards, 30 loaded images, zero failed images, and stories 10, 16, 22, and 28 each loaded at 960px natural width. The user-provided GitHub Pages URL still serves the repository README because its Pages source is configured as legacy root, not the React build artifact.
