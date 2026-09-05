@@ -15,3 +15,11 @@ The library was expanded through the UI and verified programmatically: 30 story 
 The local VividTale preview loaded the root page successfully with the hero, navigation, library controls, ad placeholder, privacy choices, contact email, and no blank-page state. The library initially rendered six cards and exposed the “Show all 30 stories” control. The ten missing story IDs were remapped to the newly reserved VividTale illustration URLs before the next production build.
 
 The follow-up DOM verification expanded the shelf after the asynchronous React update and confirmed 30 story cards, 30 image elements, 30 unique image sources, zero missing sources, and zero missing alt attributes. The ten newly remapped IDs are present in the rendered library source map.
+
+## Four-image Vercel diagnosis
+
+The local preview now exposes the four requested cards with the corrected public CDN URLs for stories 10, 16, 22, and 28. Direct HTTP checks returned 200 for all four CDN files. The prior Vercel deployment returned 404 for both the old internal `/manus-storage/` paths and the new CDN-independent card paths because the updated code had not been published there. The browser DOM confirms the four cards and their public CDN `src` values; image dimensions are still loading asynchronously at the instant of the DOM check.
+
+## Final CDN image pass
+
+After switching the full story map to public CDN URLs, the browser test expanded all 30 cards and forced deferred images to load. It confirmed 30 loaded images, zero failed images, 30 unique sources, and stories 10, 16, 22, and 28 each loaded at 960px natural width. This removes the earlier Vercel 404 risk caused by internal `/manus-storage/` paths.

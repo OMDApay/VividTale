@@ -26,3 +26,11 @@
 - [x] Verify all 30 story cards have distinct image sources and valid rendered images.
 - [x] Re-run TypeScript, production build, preview smoke test, and blank-page checks.
 - [ ] Push the updated code and assets mapping to GitHub main; checkpoint is the remaining final step.
+
+## Broken images and Vercel final link
+
+- [ ] Diagnose why story images 10, 16, 22, and 28 fail even though their cards render.
+- [ ] Replace the four failing image sources with confirmed working assets and preserve the same visual design.
+- [ ] Verify the four images in the rendered DOM and through direct HTTP asset checks.
+- [ ] Confirm whether a real Vercel production deployment exists; if not, prepare the project for the user's Publish action without claiming a URL.
+- [ ] Save a checkpoint after the corrected image and deployment verification pass.
