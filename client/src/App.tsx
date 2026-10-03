@@ -172,9 +172,63 @@ const generatedStories: Story[] = additionalSeeds.map(([id, title, emoji, lesson
   blurb,
   tone: tones[index % tones.length],
   content: `In a bright little corner of the forest lived ${title.replace(/^The |^A /, "").toLowerCase()}. One morning, a small problem appeared, and the friends had to slow down and listen.\n\nWith patience, courage, and a helping paw, they tried one small step at a time. Each attempt taught them something new, and soon the whole meadow was smiling again.\n\nThe friends remembered this lesson: ${lesson}`,
-}));
+	}));
 
-const stories = [...recoveredStories, ...generatedStories];
+const grammarTracks = [
+  "Nouns, pronouns, and the verb be",
+  "Simple present and everyday routines",
+  "There is / there are and place words",
+  "Present continuous for actions now",
+  "Countable nouns and helpful quantifiers",
+  "Simple past with regular and irregular verbs",
+  "Past questions and short answers",
+  "Past continuous for background actions",
+  "Future with will and kind promises",
+  "Be going to for plans",
+  "Comparatives and superlatives",
+  "Adverbs of manner and frequency",
+  "Modal verbs: can, should, and must",
+  "Imperatives and polite requests",
+  "Object pronouns and possessives",
+  "Present perfect for life experiences",
+  "Present perfect with since and for",
+  "Past perfect and the order of events",
+  "First conditional and real possibilities",
+  "Second conditional and thoughtful choices",
+  "Present perfect continuous",
+  "Relative clauses with who, which, and that",
+  "Gerunds and infinitives",
+  "Reported speech and careful listening",
+  "Passive voice and how things are made",
+  "Conjunctions for complex sentences",
+  "Phrasal verbs in friendly conversations",
+  "Prepositions and precise descriptions",
+  "Mixed tense review and editing",
+  "Complete grammar review through storytelling",
+] as const;
+
+const storyPeople = [
+  "Barnaby and Bobby", "Lily and a little turtle", "Bella and her garden friends", "Tom and the patient flowers", "Sam and his colorful breakfast", "Ronnie and Tilly", "Mira and a shy star", "Nico and a careful mouse", "Sunny the sunflower", "Pip the young farmer", "Milo the reading bear", "Cloudlet and the thirsty garden", "Hedgehog and the meadow team", "Ant and Grasshopper", "Elo the remembering elephant", "Suri the squirrel", "Mina and a gentle elephant", "Ollie the wise owl", "Dewdrop and the river", "Cora the changing butterfly", "Rabbit and the berry bush", "Nova the little star", "Bruno the clean bear", "Tulip and the seed circle", "Beaver and the riverside builders", "Whiskers the reading cat", "Ant and the picnic path", "Hazel the sharing squirrel", "Rainbow Cloud and the rainy town", "Polar Bear and the warm-hearted neighbors",
+] as const;
+
+function buildLongStory(story: Story, index: number) {
+  const focus = grammarTracks[index];
+  const people = storyPeople[index];
+  const setting = ["a bright woodland", "a quiet village", "a green meadow", "a riverside garden", "a small hill beside the school", "a friendly forest"] [index % 6];
+  const opening = `In ${setting}, ${people} lived among neighbors who cared for one another. The morning was peaceful, but a small problem was waiting. ${story.blurb} The friends did not solve it with magic or with a perfect answer. They solved it by noticing details, asking respectful questions, and taking one careful step at a time.`;
+  const lessonScene = `At first, everyone saw the problem differently. One friend felt worried, another felt impatient, and a third friend wanted to hurry. They sat together under a leafy tree and named what they knew. “We can listen before we decide,” they agreed. This simple promise changed the mood. Instead of blaming anyone, they shared jobs, checked their work, and encouraged the quietest voice in the group. In this way, the story shows that ${story.lesson.toLowerCase()}`;
+  const practice = `The friends then practiced the language of the day: ${focus}. They made honest examples from their own adventure. “I notice the path.” “We are helping now.” “Yesterday, we tried again.” “Tomorrow, we will share the plan.” Each sentence helped them understand both grammar and life. When a sentence sounded unclear, they changed it kindly. When an idea was difficult, they divided it into smaller pieces. Their teacher explained that grammar is not a wall; it is a map that helps a listener understand time, people, actions, and reasons.`;
+  const turningPoint = `Near sunset, the hardest moment arrived. A sudden wind moved the supplies, the map became damp, and the friends discovered that their first plan was not enough. They paused instead of arguing. The careful friend remembered an earlier clue. The brave friend asked for help. The curious friend compared two possible paths. Together, they made a better plan and gave every neighbor a useful task. Nobody was laughed at for making a mistake. Every mistake became information, and every effort was treated with respect.`;
+  const resolution = `By evening, the problem was smaller because the community had worked together. ${people} looked at the result and understood that success was not only the finished job. Success was the patience used along the way, the honest words spoken during confusion, and the kindness shown when someone needed another chance. The neighbors thanked one another, cleaned the place, and left it ready for the next morning. The children wrote three sentences in their notebooks: one about what happened, one about what they learned, and one about what they would do next.`;
+  const reflection = `The next day, the friends told the story to younger learners. They explained that a good reader can look for the subject, the verb, the time word, and the reason in each sentence. They also explained that a good friend can look for a worried face, an unheard voice, or a small chance to help. The lesson was simple: ${story.lesson} Before going home, each child chose one safe action to practice. One would listen more carefully. One would prepare early. One would ask a better question. One would share a useful skill. Their choices were different, but their purpose was the same: to grow while helping others grow.`;
+  const closing = `That evening, the forest became quiet again. The stars appeared, the leaves moved softly, and the friends remembered that learning takes time. A single story cannot teach everything in one minute, but a thoughtful story can give a learner a place to begin. Read this tale slowly. Notice the grammar focus, retell the events in your own words, and ask how the lesson could appear in real life. Then read it once more and find a sentence that shows courage, a sentence that shows kindness, and a sentence that shows curiosity. The friends smiled because they knew that every careful sentence could lead to a careful action.`;
+  return [opening, lessonScene, practice, turningPoint, resolution, reflection, closing].join("\n\n");
+}
+
+const stories = [...recoveredStories, ...generatedStories].map((story, index) => ({
+  ...story,
+  content: buildLongStory(story, index),
+}));
 
 function getReviewQuestions(story: Story) {
   return [
@@ -202,6 +256,7 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: (story: Story) => 
         <p className="eyebrow">A little story · {story.id}</p>
         <h3>{story.title}</h3>
         <p className="card-blurb">{story.blurb}</p>
+        <p className="grammar-chip"><span>Grammar {String(story.id).padStart(2, "0")}</span>{grammarTracks[story.id - 1]}</p>
         <div className="lesson-chip"><Check size={14} strokeWidth={3} /><span>{story.lesson}</span></div>
         <button className="read-link" onClick={() => onOpen(story)}><BookOpen size={16} />Read this story <ArrowRight size={16} /></button>
       </div>
@@ -369,6 +424,7 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
           <p className="eyebrow">VividTale reading room</p>
           <h2 id="reader-title">{story.title}</h2>
           <p className="reader-lesson"><Sparkles size={17} />{story.lesson}</p>
+          <p className="reader-grammar"><BookOpen size={15} /><span><strong>Grammar focus:</strong> {grammarTracks[story.id - 1]}</span></p>
           <div className="voice-player" aria-label="Story voice controls">
             <div className="voice-intro"><span className="voice-icon"><Volume2 size={18} /></span><div><strong>{isSpeaking ? (isPaused ? "Voice paused" : "Reading aloud") : "Listen to the story"}</strong><span>{voiceStatus}</span></div></div>
             <div className="voice-settings">

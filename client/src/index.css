@@ -141,6 +141,8 @@ h1 em, h2 em { color: var(--coral); font-style: normal; }
 .card-copy .eyebrow { margin-bottom: 9px; font-size: 9px; }
 .card-copy h3 { min-height: 49px; margin-bottom: 9px; color: var(--forest-dark); font-size: 25px; line-height: 1; }
 .card-blurb { min-height: 55px; margin-bottom: 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.grammar-chip { display: flex; align-items: baseline; gap: 7px; min-height: 34px; margin: 0 0 12px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+.grammar-chip span { flex: 0 0 auto; padding: 4px 6px; color: var(--forest); background: var(--sage); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
 .lesson-chip { display: flex; align-items: flex-start; gap: 8px; min-height: 45px; padding: 10px 11px; color: var(--forest); background: #edf2e7; font-size: 11px; line-height: 1.4; font-weight: 700; }
 .lesson-chip svg { flex: 0 0 auto; margin-top: 1px; color: var(--coral); }
 .read-link { display: inline-flex; align-items: center; gap: 8px; width: fit-content; margin-top: auto; padding: 17px 0 0; cursor: pointer; color: var(--coral-dark); background: transparent; font-size: 13px; font-weight: 800; }
@@ -211,6 +213,9 @@ h1 em, h2 em { color: var(--coral); font-style: normal; }
 .reader-main h2 { max-width: 460px; margin-bottom: 19px; color: var(--forest-dark); font-size: clamp(37px, 4vw, 57px); line-height: .96; }
 .reader-lesson { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 24px; color: var(--coral-dark); font-size: 14px; line-height: 1.5; font-weight: 800; }
 .reader-lesson svg { flex: 0 0 auto; margin-top: 2px; }
+.reader-grammar { display: flex; align-items: flex-start; gap: 8px; margin: -10px 0 21px; padding: 10px 11px; color: var(--forest); background: var(--sage); font-size: 11px; line-height: 1.45; }
+.reader-grammar svg { flex: 0 0 auto; margin-top: 1px; color: var(--coral-dark); }
+.reader-grammar strong { color: var(--forest-dark); }
 .voice-player { padding: 17px 18px 14px; background: #edf2e7; border-left: 3px solid var(--coral); }
 .voice-intro { display: flex; align-items: center; gap: 11px; }
 .voice-icon { width: 33px; height: 33px; display: grid; place-items: center; color: #fff; background: var(--forest); border-radius: 50%; }
