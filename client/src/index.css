@@ -234,6 +234,11 @@ h1 em, h2 em { color: var(--coral); font-style: normal; }
 .story-text { margin-top: 30px; color: #46564d; font-size: 15px; line-height: 1.75; }
 .story-text p { margin-bottom: 17px; padding-left: 11px; border-left: 2px solid transparent; transition: color 180ms, border 180ms; }
 .story-text p.speaking-line { color: var(--forest-dark); border-left-color: var(--coral); }
+.review-questions { margin-top: 30px; padding: 20px 21px 18px; background: #fffdf7; border: 1px solid rgba(36,78,59,.14); border-top: 3px solid var(--sun); }
+.review-questions .eyebrow { margin-bottom: 7px; color: var(--coral-dark); }
+.review-questions h3 { margin-bottom: 12px; color: var(--forest-dark); font-size: 27px; line-height: 1; }
+.review-questions ol { display: grid; gap: 9px; margin: 0; padding-left: 22px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.review-questions li::marker { color: var(--coral); font-weight: 800; }
 .reader-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 17px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
 .reader-footer > span { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -314,4 +319,3 @@ h1 em, h2 em { color: var(--coral); font-style: normal; }
   .cookie-notice { right: 10px; bottom: 10px; width: calc(100vw - 20px); display: block; padding: 16px; }
   .cookie-actions { justify-content: start; margin-top: 13px; }
 }
-

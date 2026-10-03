@@ -176,6 +176,14 @@ const generatedStories: Story[] = additionalSeeds.map(([id, title, emoji, lesson
 
 const stories = [...recoveredStories, ...generatedStories];
 
+function getReviewQuestions(story: Story) {
+  return [
+    `What happened in “${story.title}” that helped the character learn?`,
+    `How does this story’s lesson — ${story.lesson.toLowerCase()} — connect to your own life?`,
+    "What is one kind, brave, or curious choice you could try today?",
+  ];
+}
+
 function Logo() {
   return (
     <a className="brand" href="#top" aria-label="VividTale home">
@@ -189,7 +197,7 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: (story: Story) => 
   return (
     <article className={`story-card tone-${story.tone}`}>
       <div className="card-topline"><span className="story-number">{String(story.id).padStart(2, "0")}</span><span className="card-leaf">✦</span></div>
-      <div className={`card-illustration scene-${story.tone}`}><img src={STORY_IMAGES[story.id]} alt={`${story.title} illustration`} loading={story.id > 6 ? "lazy" : "eager"} /></div>
+      <div className="card-illustration"><img src={STORY_IMAGES[story.id]} alt={`${story.title} illustration`} loading={story.id > 6 ? "lazy" : "eager"} /></div>
       <div className="card-copy">
         <p className="eyebrow">A little story · {story.id}</p>
         <h3>{story.title}</h3>
@@ -348,6 +356,7 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
 
   if (!story) return null;
   const progress = paragraphs.length ? Math.min(100, Math.round(((paragraphIndex + (isSpeaking ? 0.35 : 0)) / paragraphs.length) * 100)) : 0;
+  const reviewQuestions = getReviewQuestions(story);
   const selectedVoiceLabel = availableVoices.find((voice) => (voice.voiceURI || voice.name) === selectedVoiceURI)?.name;
   const voiceStatus = !voiceReady ? "Voice narration is unavailable in this browser" : voiceError ? "This voice could not start; try another option" : availableVoices.length ? `${selectedVoiceLabel || "Automatic voice"} · English narration` : "Loading English voices…";
 
@@ -374,6 +383,11 @@ function StoryReader({ story, onClose }: { story: Story | null; onClose: () => v
             <div className="voice-meta"><span>Paragraph {Math.min(paragraphIndex + 1, paragraphs.length)} of {paragraphs.length}</span><span>{progress}%</span></div>
           </div>
           <div className="story-text">{paragraphs.map((paragraph, index) => <p key={`${story.id}-${index}`} className={index === paragraphIndex && isSpeaking ? "speaking-line" : ""}>{paragraph}</p>)}</div>
+          <section className="review-questions" aria-labelledby="review-title">
+            <p className="eyebrow" id="review-title">Pause &amp; remember</p>
+            <h3>Story review</h3>
+            <ol>{reviewQuestions.map((question) => <li key={question}>{question}</li>)}</ol>
+          </section>
           <div className="reader-footer"><span><Headphones size={15} />A calm read, at your pace</span><button className="text-button" onClick={onClose}>Back to the library <ArrowRight size={15} /></button></div>
         </div>
       </section>
